@@ -12,5 +12,5 @@ def validate(problem, solution):
     It should give you some indication of the correctness of your planner,
     mainly for debugging purposes.
     '''
-    ' YOUR CODE HERE '
-    util.raiseNotDefined()
+    return solution[0] in problem.goal
+

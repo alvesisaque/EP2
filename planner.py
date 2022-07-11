@@ -84,7 +84,7 @@ class ProgressionPlanning(object):
         ''' Return true if `state` is a goal state. '''
         return State(state).intersect(self.goal) == State(self.goal)
 
-    def solve(self, W, heuristics):
+    def solve(self, W, heuristic):
         '''
         Implement best-first graph-search WA*. It receives `W` the weight of WA*
         and `heuristics` a function that receives a state s and the planning object (ie., self)
@@ -104,32 +104,39 @@ class ProgressionPlanning(object):
         num_explored = 0
         num_generated = 0
         opened = list()
-        max_step=1000
         init_state = self.problem.init
         goal_state = self.problem.goal
         initialNode = Node(State(init_state))
-        frontier = frontier(lambda searchNode:(searchNode.g + W * searchNode.h))
+        # print(initialNode)
+        frontier = Frontier(lambda searchNode:(searchNode.g + W * searchNode.h))
         frontier.push(initialNode)
         reached = False
-        for i in range(max_step):
-            sNode = frontier.pop()
-            opened.append(sNode.state)
-            if goal_state.intersect(sNode.state) == goal_state:
-                reached = True
+        while not reached:
+            try:
+                sNode = frontier.pop()
+            except KeyError as e:
                 break
-            actionsApplicable = self.applicable(sNode.state)
-            for action in actionsApplicable:
-                stateSon = self.successor(sNode.state, action)
-                if stateSon in opened:
-                    continue
-                nodeSon = Node(stateSon,
-                               action,
-                               sNode,
-                               sNode.g + 1,
-                               heuristics.h_naive(stateSon, self, goal_state)) 
-                frontier.push(nodeSon)
-            if frontier.is_empty():
-                print ('Problem does not have a solution')
-                return None
+            # print(sNode)
+            opened.append(sNode.state)
+            num_explored += 1
+            if sNode.state.intersect(goal_state) == goal_state:
+                reached = True
+            else:
+                actionsApplicable = self.applicable(sNode.state)
+                for action in actionsApplicable:
+                    stateSon = self.successor(sNode.state, action)
+                    if stateSon in opened:
+                        pass
+                    else:
+                        nodeSon = Node(stateSon,
+                                    action,
+                                    sNode,
+                                    sNode.g + 1,
+                                    heuristic(stateSon, self)) 
+                        frontier.push(nodeSon)
+                        num_generated +=1
+                if frontier.is_empty():
+                    print ('Problem does not have a solution')
+                    return None
         plan = sNode.path() 
-        return (sNode.state, plan, reached)
+        return (plan, num_explored, num_generated)
