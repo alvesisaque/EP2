@@ -111,6 +111,7 @@ class ProgressionPlanning(object):
         num_generated = 0
         explored = list()
         init_state = self.problem.init
+        goal = self.problem.goal
         frontier = Frontier(node_cost)
         frontier.push(Node(State().union(init_state)))
         while ( not frontier.is_empty() ):
@@ -129,7 +130,7 @@ class ProgressionPlanning(object):
                         action,
                         node,
                         node.g + 1,
-                        W * heuristics(stateSon, self))
+                        W * heuristics(stateSon, self, goal))
 
                     if (nodeSon not in frontier) and (stateSon not in explored):
                         frontier.push(nodeSon)
@@ -140,5 +141,5 @@ class ProgressionPlanning(object):
 
         return (plan, num_explored, num_generated)
 
-def node_cost( node ):
+def node_cost(node):
     return node.g + node.h
